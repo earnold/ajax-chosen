@@ -9,10 +9,15 @@
     # we want to use with ajax autocomplete.
     this.chosen()
     
+    if this.attr('multiple')?
+      selector = ".search-field > input"
+    else
+      selector = ".chzn-search > input"
+
     # Now that chosen is loaded normally, we can bootstrap it with
     # our ajax autocomplete code.
     this.next('.chzn-container')
-      .find(".search-field > input")
+      .find(selector)
       .bind 'keyup', ->
         # This code will be executed every time the user types a letter
         # into the input form that chosen has created
@@ -24,7 +29,7 @@
         # assuming you don't want to perform a search with less than 3
         # characters.
         options.minLength ?= 3
-        return false if val.length < options.minLength  or val is $(this).data('prevVal')
+        return false if val.length < options.minLength or val is $(this).data('prevVal')
         
         # Set the current search term so we don't execute the ajax call if
         # the user hits a key that isn't an input letter/number/symbol
