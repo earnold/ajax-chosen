@@ -3,7 +3,7 @@
   $.fn.ajaxChosen = (options, callback) ->
     # This will come in handy later.
     select = this
-    
+
     # Load chosen. To make things clear, I have taken the liberty
     # of using the .chzn-autoselect class to specify input elements
     # we want to use with ajax autocomplete.
@@ -23,7 +23,8 @@
         # Some simple validation so we don't make excess ajax calls. I am
         # assuming you don't want to perform a search with less than 3
         # characters.
-        return false if val.length < 3 or val is $(this).data('prevVal')
+        options.minLength ?= 3
+        return false if val.length < options.minLength  or val is $(this).data('prevVal')
         
         # Set the current search term so we don't execute the ajax call if
         # the user hits a key that isn't an input letter/number/symbol
