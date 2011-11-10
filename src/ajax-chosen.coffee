@@ -1,86 +1,114 @@
 (($) ->
+	$.fn.ajaxChosen = (options, itemBuilder) ->
 
-  $.fn.ajaxChosen = (options, callback) ->
-    # This will come in handy later.
+    defaultedOptions = {
+      minLength: 3,
+      queryParameter: 'term',
+      data: {}
+    }
+
+    $.extend(defaultedOptions, options)
+
+    if this.attr('multiple')?
+      inputSelector = ".search-field > input"
+    else
+      inputSelector = ".chzn-search > input"
+
+    # grab a reference to the select box
     select = this
 
-    # Load chosen. To make things clear, I have taken the liberty
-    # of using the .chzn-autoselect class to specify input elements
-    # we want to use with ajax autocomplete.
-    this.chosen()
-    
-    if this.attr('multiple')?
-      selector = ".search-field > input"
-    else
-      selector = ".chzn-search > input"
+		#initialize chosen
+    this.chosen();
 
-    # Now that chosen is loaded normally, we can bootstrap it with
-    # our ajax autocomplete code.
+    # Now that chosen is loaded normally, we can attach 
+    # a keyup event to the input field.
     this.next('.chzn-container')
-      .find(selector)
+      .find(inputSelector)
       .bind 'keyup', ->
-        # This code will be executed every time the user types a letter
-        # into the input form that chosen has created
-        
+
         # Retrieve the current value of the input form
         val = $.trim $(this).attr('value')
-        
-        # Some simple validation so we don't make excess ajax calls. I am
-        # assuming you don't want to perform a search with less than 3
-        # characters.
-        options.minLength ?= 3
-        return false if val.length < options.minLength or val is $(this).data('prevVal')
-        
-        # Set the current search term so we don't execute the ajax call if
-        # the user hits a key that isn't an input letter/number/symbol
+
+        # Checking minimum search length and dupliplicate value searches
+        # to avoid excess ajax calls.
+        return false if val.length < defaultedOptions.minLength or val is $(this).data('prevVal')
+
+        # save the previous search value in the element
         $(this).data('prevVal', val)
-        
-        # This is a useful reference for later
+
+        #grab a reference to teh input field
         field = $(this)
-        
-        # I'm assuming that it's ok to use the parameter name `term` to send
-        # the form value during the ajax call. Change if absolutely needed.
-        options.data = term: val
-        
+
+        #add the search parameter to the ajax request data
+        defaultedOptions.data[defaultedOptions.queryParameter] =  val
+
         # If the user provided an ajax success callback, store it so we can
         # call it after our bootstrapping is finished.
-        success ?= options.success
-        
-        # Create our own callback that will be executed when the ajax call is
-        # finished.
-        options.success = (data) ->
+        userDefinedSuccess = defaultedOptions.success
+
+        # Create our own success callback
+        defaultedOptions.success = (data) ->
+
           # Exit if the data we're given is invalid
           return if not data?
-          
-          # Go through all of the <option> elements in the <select> and remove
-          # ones that have not been selected by the user.
-          select.find('option').each -> $(this).remove() if not $(this).is(":selected")
-          
-          # Send the ajax results to the user callback so we can get an object of
-          # value => text pairs to inject as <option> elements.
-          items = callback data
-          
-          # Iterate through the given data and inject the <option> elements into
-          # the DOM
-          $.each items, (value, text) ->
-            $("<option />")
-              .attr('value', value)
-              .html(text)
-              .appendTo(select)
-              
+
+          # Send the ajax results to the user itemBuilder so we can get an object of
+          # value => text pairs
+          items = itemBuilder data
+
+          # use value => text pairs to build <option> tags
+          newOptions = []
+					#TODO: can this use DO block coffee script syntax?
+          $.each items, (value, text) -> 
+            newOpt = $('<option>')
+            newOpt.attr('value', value).html(text)
+            newOptions.push $(newOpt)
+
+					#grab the items that are currently in the matching field list
+          currentOptions = select.find('option')
+
+          #remove any of the current options that aren't in the the 
+					#new options block 
+          for currentOpt in currentOptions
+            do (currentOpt) -> 
+              $currentOpt = $(currentOpt)
+              presenceInNewOptions = (newOption for newOption in newOptions when newOption.attr('value') is $currentOpt.attr('value'))
+              if presenceInNewOptions.length is 0
+                $currentOpt.remove()
+
+
+					# removeOptionIfNotPresent = (currentOption) -> 
+          #   $currentOption = $(currentOption)
+          #   inListOptions = (newOption for newOption in newOptions when newOption.attr('value') is $currentOption.attr('value'))
+          #   if inListOptions.length is 0
+          #     $currentOption.remove()
+
+          # removeOptionIfNotPresent currentOption for currentOption in currentOptions
+
+                    #for each newOption not in currentOptions, append it
+          # $.each newOptions, (newOption) -> 
+          #   select.append(newOption)
+
+          # select.append newOption for newOption in newOptions
+          for newOpt in newOptions
+            do (newOpt) ->
+              presenceInCurrentOptions = (currentOption for currentOption in currentOptions when $(currentOption).attr('value') is newOpt.attr('value'))
+              if presenceInCurrentOptions.length is 0
+                select.append newOpt
+
           # Tell chosen that the contents of the <select> input have been updated
           # This makes chosen update its internal list of the input data.
           select.trigger("liszt:updated")
-          
+
           # For some reason, the contents of the input field get removed once you
           # call trigger above. Often, this can be very annoying (and can make some
           # searches impossible), so we add the value the user was typing back into
           # the input field.
           field.attr('value', val)
-          
+
           # Finally, call the user supplied callback (if it exists)
-          success() if success?
-          
+          userDefinedSuccess() if userDefinedSuccess?
+
         # Execute the ajax call to search for autocomplete data
-        $.ajax(options)
+        $.ajax(defaultedOptions)
 )(jQuery)
