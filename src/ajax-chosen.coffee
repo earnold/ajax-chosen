@@ -96,15 +96,20 @@
               if presenceInCurrentOptions.length is 0
                 select.append newOpt
 
+
+          #sometimes the user has kept typing 
+          #after the callback started so we grab the current value
+          latestVal = field.attr('value')
+
           # Tell chosen that the contents of the <select> input have been updated
           # This makes chosen update its internal list of the input data.
-          select.trigger("liszt:updated")
+          select.trigger "liszt:updated"
 
           # For some reason, the contents of the input field get removed once you
           # call trigger above. Often, this can be very annoying (and can make some
           # searches impossible), so we add the value the user was typing back into
           # the input field.
-          field.attr('value', val)
+          field.attr 'value', latestVal
 
           # Finally, call the user supplied callback (if it exists)
           userDefinedSuccess() if userDefinedSuccess?
