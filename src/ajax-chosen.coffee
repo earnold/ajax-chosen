@@ -1,9 +1,10 @@
 (($) ->
-	$.fn.ajaxChosen = (options, itemBuilder) ->
+ $.fn.ajaxChosen = (options, itemBuilder) ->
 
     defaultedOptions = {
       minLength: 3,
       queryParameter: 'term',
+      queryLimit: 10,
       data: {}
     }
 
@@ -24,19 +25,33 @@
     # a keyup event to the input field.
     this.next('.chzn-container')
       .find(inputSelector)
-      .bind 'keyup', ->
+      .bind 'keyup', (e)->
 
         # Retrieve the current value of the input form
         val = $.trim $(this).attr('value')
 
-        # Checking minimum search length and dupliplicate value searches
-        # to avoid excess ajax calls.
-        return false if val.length < defaultedOptions.minLength or val is $(this).data('prevVal')
+        # Retrieve the previous value of the input form
+        prevVal = $(this).data('prevVal') ? ''
 
-        # save the previous search value in the element
+        # save the current value in the element
         $(this).data('prevVal', val)
 
-        #grab a reference to teh input field
+        # Checking minimum search length and dupliplicate value searches
+        # to avoid excess ajax calls.
+        return false if val.length < defaultedOptions.minLength or val is prevVal
+
+        #grab the items that are currently in the matching field list
+        currentOptions = select.find('option')
+
+				#if there are fewer than 10 of these and we're making a longer
+				#query, we can let regular chosen handle the filtering
+				#provided that we've already done at least one call
+        if currentOptions.length <= defaultedOptions.queryLimit and 
+           val.indexOf(prevVal) is 0 and 
+           prevVal isnt ''
+          return false
+
+        #grab a reference to the input field
         field = $(this)
 
         #add the search parameter to the ajax request data
@@ -64,9 +79,6 @@
             newOpt.attr('value', value).html(text)
             newOptions.push $(newOpt)
 
-					#grab the items that are currently in the matching field list
-          currentOptions = select.find('option')
-
           #remove any of the current options that aren't in the the 
 					#new options block 
           for currentOpt in currentOptions
@@ -76,18 +88,6 @@
               if presenceInNewOptions.length is 0
                 $currentOpt.remove()
 
-
-					# removeOptionIfNotPresent = (currentOption) -> 
-          #   $currentOption = $(currentOption)
-          #   inListOptions = (newOption for newOption in newOptions when newOption.attr('value') is $currentOption.attr('value'))
-          #   if inListOptions.length is 0
-          #     $currentOption.remove()
-
-          # removeOptionIfNotPresent currentOption for currentOption in currentOptions
-
-                    #for each newOption not in currentOptions, append it
-          # $.each newOptions, (newOption) -> 
-          #   select.append(newOption)
 
           # select.append newOption for newOption in newOptions
           for newOpt in newOptions
