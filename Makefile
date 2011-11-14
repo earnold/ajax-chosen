@@ -1,2 +1,2 @@
 all:
-	coffee -o lib/ -c src/
+	coffee --lint -o lib/ -c src/ 
