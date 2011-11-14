@@ -46,7 +46,7 @@
 				#if there are fewer than 10 of these and we're making a longer
 				#query, we can let regular chosen handle the filtering
 				#provided that we've already done at least one call
-        if currentOptions.length <= defaultedOptions.queryLimit and 
+        if currentOptions.length < defaultedOptions.queryLimit and 
            val.indexOf(prevVal) is 0 and 
            prevVal isnt ''
           return false
