@@ -112,7 +112,7 @@
           field.attr 'value', latestVal
 
           # Finally, call the user supplied callback (if it exists)
-          userDefinedSuccess() if userDefinedSuccess?
+          userDefinedSuccess(data) if userDefinedSuccess?
 
         # Execute the ajax call to search for autocomplete data
         $.ajax(defaultedOptions)
