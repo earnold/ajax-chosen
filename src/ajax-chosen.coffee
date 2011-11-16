@@ -10,7 +10,11 @@
 
     $.extend(defaultedOptions, options)
 
-    if this.attr('multiple')?
+    # determining whether this allows
+    # multiple results will affect both the selector
+    # and the ways previously selected results are cleared (line 88) 
+    multiple = this.attr('multiple')?
+    if multiple
       inputSelector = ".search-field > input"
     else
       inputSelector = ".chzn-search > input"
@@ -64,9 +68,6 @@
         # Create our own success callback
         defaultedOptions.success = (data) ->
 
-          # Exit if the data we're given is invalid
-          return if not data?
-
           # Send the ajax results to the user itemBuilder so we can get an object of
           # value => text pairs
           items = itemBuilder data
@@ -84,6 +85,7 @@
           for currentOpt in currentOptions
             do (currentOpt) -> 
               $currentOpt = $(currentOpt)
+              return if $currentOpt.attr('selected') and multiple
               presenceInNewOptions = (newOption for newOption in newOptions when newOption.attr('value') is $currentOpt.attr('value'))
               if presenceInNewOptions.length is 0
                 $currentOpt.remove()
