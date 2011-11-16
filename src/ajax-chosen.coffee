@@ -32,13 +32,13 @@
       .bind 'keyup', (e)->
 
 
-        #we wrap out callbacks in a short Timeout so that if
+        #we wrap our search in a short Timeout so that if
         #a person is typing we do not get race conditions with
         #multiple searches happening simultaneously
         clearTimeout(this.previousSearch) if this.previousSearch
 
         #wrap the search functionality in a function
-        #so that it can be put inside 
+        #so that it can be put inside a timeout
         search = => 
           # Retrieve the current value of the input form
           val = $.trim $(this).attr('value')
