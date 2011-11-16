@@ -8,6 +8,9 @@
       data: {}
     }
 
+    if defaultedOptions.userSuppliedSuccess
+      defaultedOptions.userSuppliedSuccess = defaultedOptions.success
+
     $.extend(defaultedOptions, options)
 
     # determining whether this allows
@@ -31,11 +34,11 @@
       .find(inputSelector)
       .bind 'keyup', (e)->
 
-
         #we wrap our search in a short Timeout so that if
         #a person is typing we do not get race conditions with
         #multiple searches happening simultaneously
-        clearTimeout(this.previousSearch) if this.previousSearch
+        if this.previousSearch
+          clearTimeout(this.previousSearch) 
 
         #wrap the search functionality in a function
         #so that it can be put inside a timeout
@@ -76,7 +79,6 @@
 
           # Create our own success callback
           defaultedOptions.success = (data) ->
-
             # Send the ajax results to the user itemBuilder so we can get an object of
             # value => text pairs
             items = itemBuilder data
@@ -111,32 +113,34 @@
                   do (currentOption) -> 
                     if $(currentOption).attr('value') is newOpt.attr('value')
                       presenceInCurrentOptions = true
-
                 if !presenceInCurrentOptions
                   select.append newOpt
 
-            #sometimes the user has kept typing 
-            #after the callback started so we grab the current value
-            latestVal = field.attr('value')
+            #even with setting call backs, we may
+            #get race conditions on a search
+            #this is to grab the 
+            latestVal = field.val()
 
             # Tell chosen that the contents of the <select> input have been updated
             # This makes chosen update its internal list of the input data.
             select.trigger "liszt:updated"
 
-            # For some reason, the contents of the input field get removed once you
-            # call trigger above. Often, this can be very annoying (and can make some
-            # searches impossible), so we add the value the user was typing back into
+            # Chosen contents of the input field get removed once you
+            # call trigger above so we add the value the user was typing back into
             # the input field.
-            field.attr 'value', latestVal
+            #
+            field.val(latestVal)
 
             # Finally, call the user supplied callback (if it exists)
-            userDefinedSuccess(data) if userDefinedSuccess?
+            if defaultedOptions.userSuppliedSuccess
+              defaultedOptions.userSuppliedSuccess(data) 
+
+            #end of success function
 
           # Execute the ajax call to search for autocomplete data
           $.ajax(defaultedOptions)
 
           #end of search function
-
         this.previousSearch = setTimeout(search, 100);
 
 
