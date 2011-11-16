@@ -19,7 +19,7 @@
     select = this
 
 		#initialize chosen
-    this.chosen();
+    this.chosen()
 
     # Now that chosen is loaded normally, we can attach 
     # a keyup event to the input field.
@@ -33,12 +33,12 @@
         # Retrieve the previous value of the input form
         prevVal = $(this).data('prevVal') ? ''
 
-        # save the current value in the element
-        $(this).data('prevVal', val)
-
         # Checking minimum search length and dupliplicate value searches
         # to avoid excess ajax calls.
         return false if val.length < defaultedOptions.minLength or val is prevVal
+
+        # store the current value in the element
+        $(this).data('prevVal', val)
 
         #grab the items that are currently in the matching field list
         currentOptions = select.find('option')
@@ -46,8 +46,8 @@
 				#if there are fewer than 10 of these and we're making a longer
 				#query, we can let regular chosen handle the filtering
 				#provided that we've already done at least one call
-        if currentOptions.length < defaultedOptions.queryLimit and 
-           val.indexOf(prevVal) is 0 and 
+        if currentOptions.length < defaultedOptions.queryLimit and
+           val.indexOf(prevVal) is 0 and
            prevVal isnt ''
           return false
 
@@ -88,14 +88,21 @@
               if presenceInNewOptions.length is 0
                 $currentOpt.remove()
 
+          #get the new, trimmed currentOptions
+          #so the next loop doesn't do unnecessary loops
+          currentOptions = select.find('option')
 
           # select.append newOption for newOption in newOptions
           for newOpt in newOptions
             do (newOpt) ->
-              presenceInCurrentOptions = (currentOption for currentOption in currentOptions when $(currentOption).attr('value') is newOpt.attr('value'))
-              if presenceInCurrentOptions.length is 0
-                select.append newOpt
+              presenceInCurrentOptions = false
+              for currentOption in currentOptions
+                do (currentOption) -> 
+                  if $(currentOption).attr('value') is newOpt.attr('value')
+                    presenceInCurrentOptions = true
 
+              if !presenceInCurrentOptions
+                select.append newOpt
 
           #sometimes the user has kept typing 
           #after the callback started so we grab the current value
