@@ -6,13 +6,16 @@
       queryParameter: 'term',
       queryLimit: 10,
       data: {},
-      chosenOptions: {}
+      chosenOptions: {},
+      searchingText: "Searching..."
     }
 
     if defaultedOptions.userSuppliedSuccess
       defaultedOptions.userSuppliedSuccess = defaultedOptions.success
 
     $.extend(defaultedOptions, options)
+
+    defaultedOptions.chosenOptions.no_results_text = defaultedOptions.searchingText
 
     # determining whether this allows
     # multiple results will affect both the selector
@@ -60,16 +63,30 @@
           #grab the items that are currently in the matching field list
           currentOptions = select.find('option')
 
+          
+          #grab a reference to the input field
+          field = $(this)
+
+
           #if there are fewer than 10 of these and we're making a longer
           #query, we can let regular chosen handle the filtering
           #provided that we've already done at least one call
           if currentOptions.length < defaultedOptions.queryLimit and
-             val.indexOf(prevVal) is 0 and
-             prevVal isnt ''
-            return false
+                val.indexOf(prevVal) is 0 and
+                prevVal isnt ''
 
-          #grab a reference to the input field
-          field = $(this)
+              #our hack above changes the No Results text to 'Searching...'
+              #we shoudl change it back in the case there are no results
+              #within a native chosen search
+
+              if multiple
+                resultsDiv = field.parent().parent().siblings()
+              else
+                resultsDiv = field.parent().parent()
+
+              resultsDiv.find('.no-results').html("No results. '" + val + "'")
+
+              return false
 
           #add the search parameter to the ajax request data
           defaultedOptions.data[defaultedOptions.queryParameter] =  val
@@ -80,6 +97,8 @@
 
           # Create our own success callback
           defaultedOptions.success = (data) ->
+
+
             # Send the ajax results to the user itemBuilder so we can get an object of
             # value => text pairs
             items = itemBuilder data
@@ -87,10 +106,11 @@
             # use value => text pairs to build <option> tags
             newOptions = []
             #TODO: can this use DO block coffee script syntax?
-            $.each items, (value, text) -> 
+            $.each items, (value, text) ->
               newOpt = $('<option>')
               newOpt.attr('value', value).html(text)
               newOptions.push $(newOpt)
+
 
             #remove any of the current options that aren't in the the 
             #new options block 
@@ -117,14 +137,31 @@
                 if !presenceInCurrentOptions
                   select.append newOpt
 
+           
             #even with setting call backs, we may
             #get race conditions on a search
-            #this is to grab the 
+            #this is to fix that
             latestVal = field.val()
+
+            #this may seem to come late, but... 
+            #if we actually have found nothing on the server, 
+            #we display a custom no results tag
+             #if there are no results on the server
+            #add a no results tag. 
+            if $.isEmptyObject(data)
+              noResult = $('<option>')
+              noResult.addClass('no-results')
+              noResult.html("No results. '" + latestVal + "'")
+              select.append(noResult);
+
 
             # Tell chosen that the contents of the <select> input have been updated
             # This makes chosen update its internal list of the input data.
             select.trigger "liszt:updated"
+
+            #our hack no-result classes will have too many
+            #classes associated with them, so those must be removed
+            $('.no-results').removeClass('active-result')
 
             # Chosen contents of the input field get removed once you
             # call trigger above so we add the value the user was typing back into
@@ -132,11 +169,12 @@
             #
             field.val(latestVal)
 
-            #to mimic the chosen winnowing behavior, 
-            #we highlight the first result with a keydown event
-            keydownEvent = $.Event('keydown')
-            keydownEvent.which = 40 #the down arrow
-            field.trigger(keydownEvent)
+            if !$.isEmptyObject(data) 
+              #to mimic the chosen winnowing behavior, 
+              #we highlight the first result with a keydown event
+              keydownEvent = $.Event('keydown')
+              keydownEvent.which = 40 #the down arrow
+              field.trigger(keydownEvent)
 
 
             # Finally, call the user supplied callback (if it exists)
