@@ -117,10 +117,6 @@
                 if !presenceInCurrentOptions
                   select.append newOpt
 
-            #to mimic the chosen winnowing behavior, 
-            #we highlight the first result
-            select.find('option').first().addClass('highlighted')
-           
             #even with setting call backs, we may
             #get race conditions on a search
             #this is to grab the 
@@ -135,6 +131,12 @@
             # the input field.
             #
             field.val(latestVal)
+
+            #to mimic the chosen winnowing behavior, 
+            #we highlight the first result with a keydown event
+            keydownEvent = $.Event('keydown')
+            keydownEvent.which = 40 #the down arrow
+            field.trigger(keydownEvent)
 
 
             # Finally, call the user supplied callback (if it exists)
