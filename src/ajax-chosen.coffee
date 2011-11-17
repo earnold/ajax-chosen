@@ -5,7 +5,8 @@
       minLength: 3,
       queryParameter: 'term',
       queryLimit: 10,
-      data: {}
+      data: {},
+      chosenOptions: {}
     }
 
     if defaultedOptions.userSuppliedSuccess
@@ -26,7 +27,7 @@
     select = this
 
 		#initialize chosen
-    this.chosen()
+    this.chosen(defaultedOptions.chosenOptions)
 
     # Now that chosen is loaded normally, we can attach 
     # a keyup event to the input field.
@@ -116,6 +117,10 @@
                 if !presenceInCurrentOptions
                   select.append newOpt
 
+            #to mimic the chosen winnowing behavior, 
+            #we highlight the first result
+            select.find('option').first().addClass('highlighted')
+           
             #even with setting call backs, we may
             #get race conditions on a search
             #this is to grab the 
@@ -130,6 +135,7 @@
             # the input field.
             #
             field.val(latestVal)
+
 
             # Finally, call the user supplied callback (if it exists)
             if defaultedOptions.userSuppliedSuccess
