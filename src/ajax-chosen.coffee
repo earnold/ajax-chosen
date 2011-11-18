@@ -69,15 +69,31 @@
           # store the current value in the element
           $(this).data('prevVal', val)
 
+         #grab a reference to the input field
+          field = $(this)
+
+          #our hack above changes the No Results text to 'Searching...'
+          #we should change it back in the case there are no results
+          #within a native chosen search
+          clearSearchingLabel = =>
+              if multiple
+                resultsDiv = field.parent().parent().siblings()
+              else
+                resultsDiv = field.parent().parent()
+              #chosen does a fancy regex when matching, so 
+              #we use the raw field value (e.g. not trimmed)
+              #in case it's terminal spaces preventing the match
+              resultsDiv.find('.no-results').html("No results. '" + $(this).attr('value') + "'")
+
+
           # Checking minimum search length and dupliplicate value searches
           # to avoid excess ajax calls.
-          return false if val.length < defaultedOptions.minLength or val is prevVal
+          if val.length < defaultedOptions.minLength or val is prevVal
+            clearSearchingLabel()
+            return false;
 
           #grab the items that are currently in the matching field list
           currentOptions = select.find('option')
-
-          #grab a reference to the input field
-          field = $(this)
 
           #if there are fewer than 10 of these and we're making a longer
           #query, we can let regular chosen handle the filtering
@@ -85,17 +101,7 @@
           if currentOptions.length < defaultedOptions.queryLimit and
                 val.indexOf(prevVal) is 0 and
                 prevVal isnt ''
-
-              #our hack above changes the No Results text to 'Searching...'
-              #we shoudl change it back in the case there are no results
-              #within a native chosen search
-              if multiple
-                resultsDiv = field.parent().parent().siblings()
-              else
-                resultsDiv = field.parent().parent()
-
-              resultsDiv.find('.no-results').html("No results. '" + val + "'")
-
+              clearSearchingLabel()
               return false
 
           #add the search parameter to the ajax request data
