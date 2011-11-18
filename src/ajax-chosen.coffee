@@ -10,17 +10,30 @@
       searchingText: "Searching..."
     }
 
-    if defaultedOptions.userSuppliedSuccess
-      defaultedOptions.userSuppliedSuccess = defaultedOptions.success
 
     $.extend(defaultedOptions, options)
 
+    #because we define the success callback for each
+    #search we need to store the user supplied success
+    if defaultedOptions.userSuppliedSuccess
+      defaultedOptions.userSuppliedSuccess = defaultedOptions.success
+
+    
+    #by design, chosen only has one state for when you 
+    #don't have matching items: No Results. 
+    #However, we need two states, searching
+    #and no results. 
+    #
+    #TODO: you accidentally lose any user definied no_results_test
     defaultedOptions.chosenOptions.no_results_text = defaultedOptions.searchingText
 
     # determining whether this allows
     # multiple results will affect both the selector
     # and the ways previously selected results are cleared (line 88) 
     multiple = this.attr('multiple')?
+    
+    #the box where someone types has a different selector 
+    #based on the type
     if multiple
       inputSelector = ".search-field > input"
     else
@@ -63,10 +76,8 @@
           #grab the items that are currently in the matching field list
           currentOptions = select.find('option')
 
-          
           #grab a reference to the input field
           field = $(this)
-
 
           #if there are fewer than 10 of these and we're making a longer
           #query, we can let regular chosen handle the filtering
@@ -78,7 +89,6 @@
               #our hack above changes the No Results text to 'Searching...'
               #we shoudl change it back in the case there are no results
               #within a native chosen search
-
               if multiple
                 resultsDiv = field.parent().parent().siblings()
               else
@@ -91,13 +101,8 @@
           #add the search parameter to the ajax request data
           defaultedOptions.data[defaultedOptions.queryParameter] =  val
 
-          # If the user provided an ajax success callback, store it so we can
-          # call it after our bootstrapping is finished.
-          userDefinedSuccess = defaultedOptions.success
-
           # Create our own success callback
           defaultedOptions.success = (data) ->
-
 
             # Send the ajax results to the user itemBuilder so we can get an object of
             # value => text pairs
@@ -105,12 +110,11 @@
 
             # use value => text pairs to build <option> tags
             newOptions = []
-            #TODO: can this use DO block coffee script syntax?
+
             $.each items, (value, text) ->
               newOpt = $('<option>')
               newOpt.attr('value', value).html(text)
               newOptions.push $(newOpt)
-
 
             #remove any of the current options that aren't in the the 
             #new options block 
@@ -137,7 +141,6 @@
                 if !presenceInCurrentOptions
                   select.append newOpt
 
-           
             #even with setting call backs, we may
             #get race conditions on a search
             #this is to fix that
