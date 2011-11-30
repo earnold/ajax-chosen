@@ -110,6 +110,11 @@
           # Create our own success callback
           defaultedOptions.success = (data) ->
 
+            #note: sometimes a person will leave the input
+            #      before success happens. In this case, jettison the results
+            #
+            return unless field.is(':focus')
+
             # Send the ajax results to the user itemBuilder so we can get an object of
             # value => text pairs
             items = itemBuilder data
