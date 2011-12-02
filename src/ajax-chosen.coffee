@@ -165,8 +165,10 @@
             if $.isEmptyObject(data)
               noResult = $('<option>')
               noResult.addClass('no-results')
-              noResult.html("No results. '" + latestVal + "'")
-              select.append(noResult);
+              noResult.html("No results. '" + latestVal + "'").attr('value', '')
+              select.append(noResult)
+            else
+              select.change()
 
 
             # Tell chosen that the contents of the <select> input have been updated
