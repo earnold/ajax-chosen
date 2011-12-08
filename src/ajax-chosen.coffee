@@ -7,7 +7,8 @@
       queryLimit: 10,
       data: {},
       chosenOptions: {},
-      searchingText: "Searching..."
+      searchingText: "Searching...",
+      noresultsText: "No results."
     }
 
 
@@ -83,7 +84,7 @@
               #chosen does a fancy regex when matching, so 
               #we use the raw field value (e.g. not trimmed)
               #in case it's terminal spaces preventing the match
-              resultsDiv.find('.no-results').html("No results. '" + $(this).attr('value') + "'")
+              resultsDiv.find('.no-results').html(defaultedOptions.noresultsText + " '" + $(this).attr('value') + "'")
 
 
           # Checking minimum search length and dupliplicate value searches
@@ -165,7 +166,7 @@
             if $.isEmptyObject(data)
               noResult = $('<option>')
               noResult.addClass('no-results')
-              noResult.html("No results. '" + latestVal + "'").attr('value', '')
+              noResult.html(defaultedOptions.noresultsText + " '" + latestVal + "'").attr('value', '')
               select.append(noResult)
             else
               select.change()
