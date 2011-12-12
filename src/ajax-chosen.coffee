@@ -16,7 +16,7 @@
 
     #because we define the success callback for each
     #search we need to store the user supplied success
-    if defaultedOptions.userSuppliedSuccess
+    if defaultedOptions.success
       defaultedOptions.userSuppliedSuccess = defaultedOptions.success
 
     
