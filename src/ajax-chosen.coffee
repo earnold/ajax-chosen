@@ -134,6 +134,7 @@
               do (currentOpt) -> 
                 $currentOpt = $(currentOpt)
                 return if $currentOpt.attr('selected') and multiple
+                return if $currentOpt.attr('value') is '' and $currentOpt.html() is ''  and !multiple #the deselect feature requires an empty entry
                 presenceInNewOptions = (newOption for newOption in newOptions when newOption.attr('value') is $currentOpt.attr('value'))
                 if presenceInNewOptions.length is 0
                   $currentOpt.remove()
