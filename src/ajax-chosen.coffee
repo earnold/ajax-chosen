@@ -25,7 +25,7 @@
     #However, we need two states, searching
     #and no results. 
     #
-    #TODO: you accidentally lose any user definied no_results_test
+    #TODO: you may accidentally lose any user definied no_results_test
     defaultedOptions.chosenOptions.no_results_text = defaultedOptions.searchingText
 
     # determining whether this allows
@@ -43,7 +43,7 @@
     # grab a reference to the select box
     select = this
 
-		#initialize chosen
+    #initialize chosen
     this.chosen(defaultedOptions.chosenOptions)
 
     # Now that chosen is loaded normally, we can attach 
@@ -61,17 +61,20 @@
         #wrap the search functionality in a function
         #so that it can be put inside a timeout
         search = => 
+
+          #grab a reference to the input field
+          field = $(this)
+
           # Retrieve the current value of the input form
-          val = $.trim $(this).attr('value')
+          val = $.trim field.attr('value')
+
 
           # Retrieve the previous value of the input form
-          prevVal = $(this).data('prevVal') ? ''
+          prevVal = field.data('prevVal') ? ''
 
           # store the current value in the element
-          $(this).data('prevVal', val)
+          field.data('prevVal', val)
 
-         #grab a reference to the input field
-          field = $(this)
 
           #our hack above changes the No Results text to 'Searching...'
           #we should change it back in the case there are no results
