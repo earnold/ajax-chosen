@@ -28,10 +28,14 @@
     #TODO: you may accidentally lose any user definied no_results_test
     defaultedOptions.chosenOptions.no_results_text = defaultedOptions.searchingText
 
+
+    # grab a reference to the select box
+    select = this
+
     # determining whether this allows
     # multiple results will affect both the selector
     # and the ways previously selected results are cleared (line 88) 
-    multiple = this.attr('multiple')?
+    multiple = select.attr('multiple')?
     
     #the box where someone types has a different selector 
     #based on the type
@@ -40,15 +44,13 @@
     else
       inputSelector = ".chzn-search > input"
 
-    # grab a reference to the select box
-    select = this
 
     #initialize chosen
-    this.chosen(defaultedOptions.chosenOptions)
+    select.chosen(defaultedOptions.chosenOptions)
 
     # Now that chosen is loaded normally, we can attach 
     # a keyup event to the input field.
-    this.next('.chzn-container')
+    select.next('.chzn-container')
       .find(inputSelector)
       .bind 'keyup', (e)->
 
